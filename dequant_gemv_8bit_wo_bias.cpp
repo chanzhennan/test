@@ -1,3 +1,50 @@
+__device__ __forceinline__ float2 _16bits_to8bits_quant(myhalf2* fp16_value, half s)
+{
+
+  int8_t output[8];
+
+  output[0] = __half2int_rn(fp16_value[0].x / s);
+  output[1] = __half2int_rn(fp16_value[0].y / s);
+
+  output[2] = __half2int_rn(fp16_value[1].x / s);
+  output[3] = __half2int_rn(fp16_value[1].y / s);
+
+  output[4] = __half2int_rn(fp16_value[2].x / s);
+  output[5] = __half2int_rn(fp16_value[2].y / s);
+
+  output[6] = __half2int_rn(fp16_value[3].x / s);
+  output[7] = __half2int_rn(fp16_value[3].y / s);
+
+  return *((float2*)&output[0]);
+
+}
+
+
+__device__ __forceinline__ float2 _4bits_to8bits_dequant(int8_t* int8_value, int8_t z)
+{
+
+  int8_t output[8];
+
+  // negative shl
+  output[0] = ((int8_value[0] >> 4) & 0x0F) - z;
+  output[1] = (int8_value[0] & 0x0F) - z;
+
+  output[2] = ((int8_value[1] >> 4) & 0x0F) - z;
+  output[3] = (int8_value[1] & 0x0F) - z;
+  
+  output[4] = ((int8_value[2] >> 4) & 0x0F) - z;
+  output[5] = (int8_value[2] & 0x0F) - z;
+
+  output[6] = ((int8_value[3] >> 4) & 0x0F) - z;
+  output[7] = (int8_value[3] & 0x0F) - z;
+
+  return *((float2*)&output[0]);
+
+}
+
+
+
+
 
 __global__ void dequant_gemv_8bit_wo_bias(
                             const uint8_t *qweight, half* vec, 
